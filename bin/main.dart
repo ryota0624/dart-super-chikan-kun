@@ -80,14 +80,14 @@ mixin MixInOutput {
 }
 
 mixin TranslateRecord implements UseFileReader, UseOutput {
-  void execute(String recordFilePath, String csvFilePath) {
+  void execute(String recordFilePath, String csvFilePath, int fromIndex, int toIndex) {
     final recordFile = readFile(recordFilePath).readAsStringSync();
     final input = readFile(csvFilePath).openRead();
 
     input
         .transform(Utf8Decoder())
         .transform(CsvCodec(eol: "\n").decoder)
-        .transform(StringListToLangConverter(5, 6))
+        .transform(StringListToLangConverter(fromIndex, toIndex))
         .where((lang) => lang.isNonEmpty())
         .fold(recordFile, (record, lang) => lang.convertRecord(record))
         .then(dist);
@@ -129,7 +129,7 @@ class App with MixInTranslateRecord {
 
     print("--- Convert Result ---\n");
 
-    translateRecord.execute(recordFilePath, csvFilePath);
+    translateRecord.execute(recordFilePath, csvFilePath, 5, 6);
   }
 }
 
